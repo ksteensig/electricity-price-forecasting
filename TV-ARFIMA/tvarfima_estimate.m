@@ -16,7 +16,7 @@ function [d0,w,a,b,sigma_tv2,phi,theta,mu,sigma_arma2] = tvarfima_estimate(X, in
 
         [row,col]=find(M==min(nonzeros(M)));
 
-        X_arma = arima(row,0,col);
+        X_arma = arima(row-1,0,col-1);
         est = X_arma.estimate(X_tvfi);
         
         mu = est.Constant;
