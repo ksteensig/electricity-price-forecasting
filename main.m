@@ -39,10 +39,11 @@ initial = [0.25 0.1 0.05 0.05 1000];
 
 tvarfima_fx = zeros(length(P_all)-N,3);
 
-X = P_all(1:730);
+P = P_all(1:730);
+[st, thetals] = estimate_st_ls(P);
+X = P - st;
 
 [d0,w,a,b,sigma_tv2,phi,theta,mu,sigma_arma2] = tvarfima_estimate(X, initial, lower, upper);
-[~, thetals] = estimate_st_ls(P);
 
 for i = N+1:length(P_all)
     P = P_all(1:i-1);
@@ -61,8 +62,13 @@ rmse_tvarfima = sqrt(sum(((P_all(N+1:length(P_all)) - tvarfima_fx(:,1)).^2)/(len
 X_fi = arfima_estimate(X, 'FML', [0 0]);
 
 %% estimate ARFIMA
-arima_mdl = arima(1,0,1);
-arima_fx = zeros(length(P_all)-N,3);
+arfima_fx = zeros(length(P_all)-N,1);
+
+P = P_all(1:730);
+[st, thetals] = estimate_st_ls(P);
+X = P - st;
+
+[d0,w,a,b,sigma_tv2,phi,theta,mu,sigma_arma2] = tvarfima_estimate(X, initial, lower, upper);
 
 for i = N+1:length(P_all)
     P = P_all(1:i-1);
@@ -74,13 +80,6 @@ for i = N+1:length(P_all)
     
     tvarfima_fx(i-N,1:3) = [fx fxn fxp] + st(end);
 end
-
-fxn = arima_fx(:,1) - 1.96*sqrt(arima_fx(:,2)) + arima_fx(:,3);
-fxp = arima_fx(:,1) + 1.96*sqrt(arima_fx(:,2)) + arima_fx(:,3);
-fx = arima_fx(:,1) + arima_fx(:,3);
-
-rmse_arima = sqrt(sum((P_all(N+1:length(P_all)) - fx).^2)/(length(P_all)-N));
-
 %%
 arma_mdl = arima(1,0,1);
 X_arma = arma_mdl.estimate(X_arfima)
