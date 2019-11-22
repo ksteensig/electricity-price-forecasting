@@ -28,6 +28,5 @@ function [Xf,Xf_conf_neg,Xf_conf_pos] = tvarfima_forecast(X, N, d0,w,a,b,sigma_t
     X_fi_neg = apply_inv_tvfi(X_fi_neg, d);
     X_fi_pos = apply_inv_tvfi(X_fi_pos, d);
     
-    Xf_conf_neg = X_fi_neg(length(X)-N+1:length(X));
-    Xf_conf_pos = X_fi_pos(length(X)-N+1:length(X));
+    Xf_conf_pos
 end

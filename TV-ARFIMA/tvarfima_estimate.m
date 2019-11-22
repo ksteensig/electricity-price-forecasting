@@ -1,23 +1,42 @@
 function [d0,w,a,b,sigma_tv2,phi,theta,mu,sigma_arma2] = tvarfima_estimate(X, initial, lower, upper)
-    fun = @(x) -tvfi_likelihood(x(1), x(2), x(3), x(4), x(5), X)/length(X);
+
+    Xfun = @(x) -tvfi_likelihood(x(1), x(2), x(3), x(4), x(5), X)/length(X);
+
     dfun = @(x) calc_d(x(1), x(2), x(3), x(4), x(5), X);
     
-    tv_params = [];
     %options = optimoptions('fmincon','Display','off');
+    
+    tv_params = fmincon(Xfun,initial,zeros(5),zeros(5,1),zeros(5),zeros(5,1),lower,upper);
 
-    for i = 1:1
-        tv_params = fmincon(fun,initial,zeros(5),zeros(5,1),zeros(5),zeros(5,1),lower,upper);
-
+    for i = 1:4
         d = dfun(tv_params);
 
-        X_tvfi = apply_tvfi(X,d);
+        U = apply_tvfi(X,d);
 
-        M = check_arima(X_tvfi, 6, 4);
+        %M = check_arima(U, 5, 5);
 
-        [row,col]=find(M==min(nonzeros(M)));
+        %[row,col]=find(M==min(nonzeros(M)));
 
-        X_arma = arima(row-1,0,col-1);
-        est = X_arma.estimate(X_tvfi);
+        U_arma = arima(1,0,0);
+        %est = U_arma.estimate(U, 'Display', 'off');
+        est = U_arma.estimate(U);
+        
+        AR = cell2mat(est.AR);
+        MA = cell2mat(est.MA);
+        
+        if isempty(est.AR)
+            AR = 1;
+        end
+        
+        if isempty(est.MA)
+            MA = 1;
+        end
+        
+        Y = filter(AR, MA, X);
+        
+        Yfun = @(x) -tvfi_likelihood(x(1), x(2), x(3), x(4), x(5), Y)/length(Y);
+        
+        tv_params = fmincon(Yfun,initial,zeros(5),zeros(5,1),zeros(5),zeros(5,1),lower,upper);
         
         mu = est.Constant;
         sigma_arma2 = est.Variance;
