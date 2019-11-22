@@ -14,8 +14,9 @@ function ar=check_arima(y,pp,qq)
     
     LOGL = reshape(LOGL,(pp+1)*(qq+1),1);
     PQ = reshape(PQ,(pp+1)*(qq+1),1);
-    [aic,~] = aicbic(LOGL,PQ+1,100);
-    ar=reshape(aic,pp+1,qq+1);
+    [aic,bic] = aicbic(LOGL,PQ+1,100);
+    %ar=reshape(aic,pp+1,qq+1);
+    ar=reshape(bic,pp+1,qq+1);
     
     % the rows correspond to the AR degree (p) and the
     % columns correspond to the MA degree (q). The smallest value is best
