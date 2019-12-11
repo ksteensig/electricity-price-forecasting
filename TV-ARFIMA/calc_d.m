@@ -10,24 +10,24 @@ function [d] = calc_d(d0, w, a, b, v, X)
     d_to_g = @(d) log(-2*d./(2*d - 1));
     
     % 0.4999 is used instead of 0.5 to ensure the result is always valid
-    g_to_d = @(g) 0.01 + (0.499 - 0.01)./(1 + exp(-g));
+    g_to_d = @(g) 0.0001 + (0.4999 - 0.0001)./(1 + exp(-g));
     
     g0 = d_to_g(d0);
     g(1) = w + b*g0; % s(1) = 0 by definition
     
-    for t = 2:length(X)-1
+    for t = 1:length(X)-1
         dt = g_to_d(g(t));
-        pi_t = pi_j(t-1, dt);
-        nu_t = nu_j((1:t-1)', dt);
-        Xflip = flip(X(1:t-1));
+        pi_t = pi_j(t, dt);
+        nu_t = nu_j((1:t)', dt);
+        Xflip = flip(X(1:t));
 
-        %St = v*sum(nu_t)^(-2);
+        St = v*sum(nu_t)^(-2);
         Delt = -(X(t) + sum(pi_t .* Xflip))*sum(nu_t .* Xflip)/v;
         
         hdot_t = hdot(dt);
         
-        %s(t) = St * hdot_t * Delt;
-        s(t) = hdot_t * Delt;
+        s(t) = St * hdot_t * Delt;
+        %s(t) = hdot_t * Delt;
         
         % explanation of this in the GAS R package docs
         g(t+1) = w + a*s(t) + b*g(t);
